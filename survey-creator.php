@@ -19,7 +19,8 @@
 // 
 include_once plugin_dir_path(__FILE__) . 'includes/custom-table.php';
 include_once plugin_dir_path(__FILE__) . 'includes/custom-post-type-register.php';
-include_once plugin_dir_path(__FILE__) . 'includes/custom-table.php';
+include_once plugin_dir_path(__FILE__) . 'includes/custom-meta-title.php';
+include_once plugin_dir_path(__FILE__) . 'includes/custom-questions.php';
 include_once plugin_dir_path(__FILE__) . 'includes/plugin-essentials.php';
 
 

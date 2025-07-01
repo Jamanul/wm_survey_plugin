@@ -18,7 +18,7 @@ register_deactivation_hook(__FILE__, 'wm_plugin_deactivate');
 //uninstalls the plugin
 function wm_plugin_uninstall()
 {
-    // i guess it will drop the table when i unsintall the plugin --> have to test it later.
+    // i guess it will drop the table when i delete the plugin --> have to test it later.
     global $wpdb;
 
     $table_name = $wpdb->prefix . 'survey_table';

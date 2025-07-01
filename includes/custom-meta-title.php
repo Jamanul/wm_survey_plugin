@@ -35,7 +35,7 @@ add_action("admin_init", "wm_cus_meta_box");
 //     update_post_meta($post->ID, "title_meta", $_POST["title_meta"]);
 // }
 
-// save the title in the my own meta
+// save the title in the my own db table
 function wm_save_details($post_id)
 {
 
@@ -64,7 +64,7 @@ function wm_save_details($post_id)
                     'meta_key' => $meta_key,
                     'meta_value' => $title_meta,
                 ), //data entry
-                array('%d', '%s', '%s')  //dynamically data is coming
+                array('%d', '%s', '%s')  // format
             );
         } else {
             // Update existing meta
