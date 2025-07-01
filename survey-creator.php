@@ -15,7 +15,30 @@
  * Domain Path:       /languages
  * Requires Plugins:  Survey Creator
  */
-//  activate the plugin
+
+function wm_create_custom_table()
+{
+    global $wpdb;
+
+    $table_name = $wpdb->prefix . 'survey_table';
+
+    $charset_collate = $wpdb->get_charset_collate();
+
+    $sql = "CREATE TABLE $table_name (
+    meta_id mediumint(9) NOT NULL AUTO_INCREMENT,
+    post_id mediumint(9) NOT NULL,
+    meta_key varchar(255) DEFAULT NULL,
+    meta_value longtext,
+    PRIMARY KEY (meta_id)
+) $charset_collate;";
+
+    require_once ABSPATH . 'wp-admin/includes/upgrade.php';
+    dbDelta($sql);
+}
+
+register_activation_hook(__FILE__, 'wm_create_custom_table');
+
+
 
 //  funtion to create post type 
 function wm_custom_survey()
@@ -53,21 +76,21 @@ function cus_title_creation()
 add_action("admin_init", "wm_cus_meta_box");
 
 // save the title in the post
-function save_details()
+function wm_save_details()
 {
     global $post;
     update_post_meta($post->ID, "title_meta", $_POST["title_meta"]);
 }
-add_action('save_post', 'save_details');
+add_action('save_post', 'wm_save_details');
 
 // activates the plugin
-function my_plugin_activate()
+function wm_plugin_activate()
 {
     // need to call it to create the post type
     wm_custom_survey();
 }
 
-register_activation_hook(__FILE__, 'my_plugin_activate');
+register_activation_hook(__FILE__, 'wm_plugin_activate');
 
 
 
@@ -75,17 +98,17 @@ register_activation_hook(__FILE__, 'my_plugin_activate');
 
 
 // deactivate the plugin
-function my_plugin_deactivate()
+function wm_plugin_deactivate()
 {
 
 }
-register_deactivation_hook(__FILE__, 'my_plugin_deactivate');
+register_deactivation_hook(__FILE__, 'wm_plugin_deactivate');
 
 //uninstalls the plugin
-function my_plugin_uninstall()
+function wm_plugin_uninstall()
 {
     error_log('Plugin was uninstalled.');
 }
-register_uninstall_hook(__FILE__, 'my_plugin_uninstall');
+register_uninstall_hook(__FILE__, 'wm_plugin_uninstall');
 
 
