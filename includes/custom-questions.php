@@ -9,53 +9,82 @@ function cus_question_creation($post)
 {
     global $wpdb;
     $table_name = $wpdb->prefix . 'survey_table';
-    $meta_key = "survey_question";
-    $question_value = $wpdb->get_var(
-        $wpdb->prepare(
-            "SELECT meta_value FROM $table_name WHERE post_id=%d AND meta_key=%s ",
-            $post->ID,
-            $meta_key
-        )
+
+    // Fetch all question rows for this post
+    $questions = $wpdb->get_results(
+        $wpdb->prepare("SELECT * FROM $table_name WHERE post_id = %d AND meta_key LIKE %s", $post->ID, 'survey_question_%')
     );
-    $answer_value = $wpdb->get_var(
-        $wpdb->prepare(
-            "SELECT question_answer FROM $table_name WHERE post_id=%d AND meta_key=%s ",
-            $post->ID,
-            $meta_key
-        )
-    );
-    // $question_meta = get_post_meta($post->ID, 'title_meta', true);
+
+
+    if (empty($questions)) {
+        echo '<div style="margin-bottom:24px;">please click "add new question" button to add question</div>';
+    }
+
     ?>
-    <div style="display:flex; align-items: center; gap:48px;">
-        <div>
-            <label>Survey question</label>
-            <input name="survey_question" value="<?php echo $question_value; ?>" />
-        </div>
-        <div>
-            <label>Answer</label>
-            <select name="survey_answer">
-                <option value="1" <?php selected($answer_value, '1'); ?>>True</option>
-                <option value="0" <?php selected($answer_value, '0'); ?>>False</option>
-            </select>
-        </div>
+    <div id="question-fields">
+        <?php foreach ($questions as $index => $row): ?>
+            <div class="question-block" style="display:flex; align-items:center; gap:48px; margin-bottom:16px;">
+                <div>
+                    <label>Survey Question</label>
+                    <input type="text" name="survey_questions[<?php echo $row->meta_key; ?>][question]"
+                        value="<?php $row->meta_value; ?>" />
+                </div>
+                <div>
+                    <label>Answer</label>
+                    <select name="survey_questions[<?php echo $row->meta_key; ?>][answer]">
+                        <option value="1" <?php selected($row->question_answer, '1'); ?>>True</option>
+                        <option value="0" <?php selected($row->question_answer, '0'); ?>>False</option>
+                    </select>
+                </div>
+            </div>
+        <?php endforeach; ?>
     </div>
+
+    <button type="button" id="add-question-btn" class="button">+ Add New Question</button>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let counter = <?php echo count($questions) + 1; ?>;
+            document.getElementById('add-question-btn').addEventListener('click', () => {
+                const container = document.getElementById('question-fields');
+                const block = document.createElement('div');
+                block.className = 'question-block';
+                block.style = "display:flex; align-items:center; gap:48px; margin-bottom:16px;";
+                block.innerHTML = `
+                <div>
+                    <label>Survey Question</label>
+                    <input type="text" name="survey_questions[survey_question_${counter}][question]" value="" />
+                </div>
+                <div>
+                    <label>Answer</label>
+                    <select name="survey_questions[survey_question_${counter}][answer]">
+                        <option value="1">True</option>
+                        <option value="0">False</option>
+                    </select>
+                </div>
+            `;
+                container.appendChild(block);
+                counter++;
+            });
+        });
+    </script>
     <?php
 }
 
-add_action("admin_init", "wm_cus_question_field");
+add_action('admin_init', 'wm_cus_question_field');
 
 function wm_save_question($post_id)
 {
-
     global $wpdb;
 
-    if (isset($_POST['survey_question']) && isset($_POST['survey_answer'])) {
-        $question_value = $_POST['survey_question'];
-        $answer_value = $_POST['survey_answer'];
-        $table_name = $wpdb->prefix . 'survey_table';
-        $meta_key = 'survey_question';
 
-        // Check if entry already exists
+    $table_name = $wpdb->prefix . 'survey_table';
+
+    foreach ($_POST['survey_questions'] as $meta_key => $data) {
+        $question_value = $data['question'] ?? '';
+        $answer_value = $data['answer'] ?? '';
+
+        // Check if row exists
         $existing = $wpdb->get_var($wpdb->prepare(
             "SELECT meta_id FROM $table_name WHERE post_id = %d AND meta_key = %s",
             $post_id,
@@ -63,7 +92,6 @@ function wm_save_question($post_id)
         ));
 
         if ($existing === null) {
-            // Insert new row
             $wpdb->insert(
                 $table_name,
                 [
@@ -75,7 +103,6 @@ function wm_save_question($post_id)
                 ['%d', '%s', '%s', '%s']
             );
         } else {
-            // Update existing row
             $wpdb->update(
                 $table_name,
                 [
@@ -92,14 +119,7 @@ function wm_save_question($post_id)
         }
     }
 }
-
-
-
 add_action('save_post', 'wm_save_question');
-
-
-
-
 
 
 
