@@ -96,3 +96,12 @@ function wm_save_question($post_id)
 
 
 add_action('save_post', 'wm_save_question');
+
+
+
+
+
+
+
+
+
